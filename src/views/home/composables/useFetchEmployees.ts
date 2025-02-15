@@ -1,4 +1,4 @@
-import { getAllEmployees } from '@/core/employee/application/getAllEmployees.ts'
+import { getAllEmployees } from '@/core/employee/application/get-all-employees/getAllEmployees.ts'
 import { useHomeStore } from '@/stores/home.ts'
 import { useToast } from '@/components/toast/useToast.ts'
 
