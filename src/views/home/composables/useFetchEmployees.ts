@@ -1,11 +1,23 @@
-
-import type { Employee } from '@/core/employee/domain/Employee.ts'
 import { getAllEmployees } from '@/core/employee/application/getAllEmployees.ts'
+import { useHomeStore } from '@/stores/home.ts'
+import { useToast } from '@/components/toast/useToast.ts'
 
 export const useFetchEmployees = () => {
-  const loadEmployees = async (): Promise<Employee[]> => {
-    const getAllEmployeesCommand = await getAllEmployees()
-    return await getAllEmployeesCommand.execute()
+
+  const homeStore = useHomeStore()
+  const { toast } = useToast()
+
+  const loadEmployees = async () => {
+    try {
+      const getAllEmployeesCommand = await getAllEmployees()
+      const employees = await getAllEmployeesCommand.execute()
+      homeStore.setEmployees(employees)
+    }catch(error) {
+      toast({
+          title: 'Error al cargar empleados'
+      })
+    }
+
   }
 
   return {
