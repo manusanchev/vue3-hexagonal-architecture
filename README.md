@@ -44,7 +44,7 @@ export const getAllEmployees = async (dependencies = registerDependencies()) => 
 ```
 In this example, the employeeRepository is only loaded when necessary, optimizing the application's performance and to keep
 
-### Using Composables as Use Cases
+### Using Composables
 This project uses composables to separate the application layer from the UI layer (e.g., Vue, Pinia, vue-router). This design ensures that frontend frameworks remain decoupled from the core infrastructure, making upgrades and updates easier and reducing the risk of dependency-related issues.
 
 ### Testing
