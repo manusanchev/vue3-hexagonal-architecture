@@ -1,7 +1,7 @@
 import type { EmployeeRepository } from '@/core/employee/domain/EmployeeRepository.ts'
 import type { Http } from '@/core/shared/domain/Http.ts'
-import { Types } from '@/config/container/Types.ts'
-import { injectDependency } from '@/config/container/utils/injectDependency.ts'
+import { Types } from '@/core/shared/domain/container/Types.ts'
+import { injectDependency } from '@/core/shared/infrastructure/container/utils/injectDependency.ts'
 
 const registerDependencies = async () => {
   return {
