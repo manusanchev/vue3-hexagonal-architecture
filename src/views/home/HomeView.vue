@@ -1,19 +1,25 @@
 <script setup lang="ts">
-import type { Employee } from '@/core/employee/domain/Employee.ts'
 import VButton from '@/components/button/VButton.vue'
 import { computed, onMounted, ref } from 'vue'
 import { useFetchEmployees } from '@/views/home/composables/useFetchEmployees.ts'
 import { useHomeStore } from '@/stores/home.ts'
+import { useModal } from '@/components/modal/useModal.ts'
+import { ModalTypes } from '@/components/modal/ModalTypes.ts'
 
 
 const homeStore = useHomeStore()
 const employees = computed(() => homeStore.employees)
 
 const { loadEmployees } = useFetchEmployees()
-
+const modal = useModal()
 onMounted(async () => {
   await loadEmployees()
 })
+
+const showModal = () => {
+  console.log('show modal')
+  modal.show(ModalTypes.ADD_EMPLOYEE_MODAL)
+}
 </script>
 
 <template>
@@ -21,7 +27,7 @@ onMounted(async () => {
     <div class="mx-auto w-full max-w-2xl mt-4">
       <div class="flex gap-x-4 items-center justify-between">
         <h1 class="font-medium">Empleados ({{ homeStore.countEmployees }})</h1>
-        <VButton> Añadir </VButton>
+        <VButton @click="showModal"> Añadir </VButton>
       </div>
       <div class="mt-4 flex flex-col gap-y-2">
         <div class="grid grid-cols-4 gap-x-4 px-4 py-1.5 rounded-lg bg-neutral-200 text-sm text-neutral-800 select-none">
