@@ -11,17 +11,20 @@
 /* Open state of the dialog  */
 dialog:open {
   opacity: 1;
+  transform: scale(1);
 }
 
 /* Closed state of the dialog   */
 dialog {
   opacity: 0;
   transition: all 0.2s allow-discrete;
+  transform: scale(0.5);
 }
 
 @starting-style {
   dialog:open {
     opacity: 0;
+    transform: scale(0.5);
   }
 }
 
