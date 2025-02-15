@@ -1,4 +1,5 @@
 import { Types } from '@/core/shared/domain/container/Types.ts'
+import { EnvTypes } from '@/core/shared/domain/container/EnvTypes.ts'
 
 const repositoriesContainer = {
   [Types.EMPLOYEE_REPOSITORY]: () => import('@/core/employee/infrastructure/apiEmployeeRepository.ts'),
@@ -9,9 +10,13 @@ const infrastructureContainer = {
   [Types.LOGGER]: () => import('@/core/shared/infrastructure/sentryLogger.ts'),
 }
 
-const container: Record<string, () => Promise<any>> = {
-  ...repositoriesContainer,
-  ...infrastructureContainer,
+const environmentContainer: Record<string, () => Promise<any>> = {
+  [EnvTypes.BASE_URL]: () => import.meta.env.VITE_BASE_URL,
 }
 
-export { container }
+const container: Record<string, () => Promise<any>> = {
+  ...repositoriesContainer,
+  ...infrastructureContainer
+}
+
+export { container, environmentContainer }

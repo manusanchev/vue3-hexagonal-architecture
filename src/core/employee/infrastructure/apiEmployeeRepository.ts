@@ -10,11 +10,13 @@ const registerDependencies = async () => {
   }
 }
 
+const EMPLOYEES_URL = '/users'
+
 export async function apiEmployeeRepository(dependencies= registerDependencies()): Promise<EmployeeRepository> {
   const { httpClient } = await dependencies
 
   const getAll = async () => {
-    return await httpClient.get<Employee[]>('https://jsonplaceholder.typicode.com/users')
+    return await httpClient.get<Employee[]>(EMPLOYEES_URL)
   }
 
   return {
