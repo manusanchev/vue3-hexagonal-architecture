@@ -1,3 +1,3 @@
 export interface Http {
-  get(url: string): Promise<any>
+  get<T>(url: string): Promise<T>
 }
