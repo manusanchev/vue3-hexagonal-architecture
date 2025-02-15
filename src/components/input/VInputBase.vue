@@ -2,4 +2,5 @@
 </script>
 
 <template>
+  <input />
 </template>
