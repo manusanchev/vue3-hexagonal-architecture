@@ -13,7 +13,6 @@ export const useFetchEmployees = () => {
       const employees = await getAllEmployeesCommand.execute()
       homeStore.setEmployees(employees)
     }catch(error) {
-      console.log(error)
       toast({
           title: 'Error al cargar empleados'
       })
