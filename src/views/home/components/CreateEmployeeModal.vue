@@ -15,7 +15,7 @@ import type { Employee } from '@/core/employee/domain/Employee.ts'
 
 const MODAL_ID = ModalTypes.ADD_EMPLOYEE_MODAL
 
-const { saveEmployee, isLoading, formErrors } = useSaveEmployee()
+const { saveEmployee, isLoading } = useSaveEmployee()
 const { close } = useModal()
 
 const employeeInitialState: Employee = {
