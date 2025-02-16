@@ -1,8 +1,6 @@
 
 # Vue 3 Template for Hexagonal Architecture 🚀
 
-![Status](https://img.shields.io/badge/status-WIP-orange)  ![Vue 3](https://img.shields.io/badge/Vue-3-42b883) ![Hexagonal Architecture](https://img.shields.io/badge/Architecture-Hexagonal-blue) ![Contributions Welcome](https://img.shields.io/badge/Contributions-Welcome-brightgreen)  
-
 📖 **[Leer esta documentación en español](README.es.md)**  
 
 ## 📌 Introduction
