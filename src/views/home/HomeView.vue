@@ -5,6 +5,7 @@ import { useFetchEmployees } from '@/views/home/composables/useFetchEmployees.ts
 import { useHomeStore } from '@/stores/home.ts'
 import { useModal } from '@/components/modal/useModal.ts'
 import { ModalTypes } from '@/components/modal/ModalTypes.ts'
+import CreateEmployeeModal from '@/views/home/components/CreateEmployeeModal.vue'
 
 
 const homeStore = useHomeStore()
@@ -17,7 +18,6 @@ onMounted(async () => {
 })
 
 const showModal = () => {
-  console.log('show modal')
   modal.show(ModalTypes.ADD_EMPLOYEE_MODAL)
 }
 </script>
@@ -28,11 +28,12 @@ const showModal = () => {
       <div class="flex gap-x-4 items-center justify-between">
         <h1 class="font-medium">Empleados ({{ homeStore.countEmployees }})</h1>
         <VButton @click="showModal"> Añadir </VButton>
+        <CreateEmployeeModal />
       </div>
       <div class="mt-4 flex flex-col gap-y-2">
         <div class="grid grid-cols-4 gap-x-4 px-4 py-1.5 rounded-lg bg-neutral-200 text-sm text-neutral-800 select-none">
           <div>Nombre</div>
-          <div>Telefono</div>
+          <div>Teléfono</div>
           <div>Usuario</div>
           <div>Web</div>
         </div>

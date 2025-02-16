@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { instance, mock, when } from 'ts-mockito';
-import { getAllEmployees } from './getAllEmployees';
+import { getAllEmployees } from '@/core/employee/application/get-all-employees/getAllEmployees';
 import type { EmployeeRepository } from '@/core/employee/domain/EmployeeRepository';
 import type { Logger } from '@/core/shared/domain/Logger';
 import type { Employee } from '@/core/employee/domain/Employee.ts'

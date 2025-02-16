@@ -8,6 +8,7 @@ const repositoriesContainer = {
 const infrastructureContainer = {
   [Types.HTTP_CLIENT]: () => import('@/core/shared/infrastructure/fetchClient.ts'),
   [Types.LOGGER]: () => import('@/core/shared/infrastructure/sentryLogger.ts'),
+  [Types.UUID_GENERATOR]: () => import('@/core/shared/infrastructure/uuidCryptoGenerator.ts'),
 }
 
 const environmentContainer: Record<string, () => Promise<any>> = {

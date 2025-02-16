@@ -1,8 +1,6 @@
 import type { Http } from '@/core/shared/domain/Http.ts'
 import { EnvTypes } from '@/core/shared/domain/container/EnvTypes.ts'
-import {
-  injectEnvironment
-} from '@/core/shared/infrastructure/container/utils/injectEnvironment.ts'
+import { injectEnvironment } from '@/core/shared/infrastructure/container/utils/injectEnvironment.ts'
 
 const registerDependencies = async () => {
   return {
@@ -10,16 +8,29 @@ const registerDependencies = async () => {
   }
 }
 
-
 export const fetchClient = async (dependencies = registerDependencies()): Promise<Http> => {
   const { baseUrl } = await dependencies
+
   const get = async <T>(url: string) => {
-      return await fetch(`${baseUrl}${url}`)
-        .then((response) => response.json())
-        .then((data) => data) as Promise<T>
-    }
+    return (await fetch(`${baseUrl}${url}`)
+      .then((response) => response.json())
+      .then((data) => data)) as Promise<T>
+  }
+
+  const post = async <T>(url: string, body: any) => {
+    return (await fetch(`${baseUrl}${url}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
+      .then((response) => response.json())
+      .then((data) => data)) as Promise<T>
+  }
 
   return {
-    get
+    get,
+    post,
   }
 }

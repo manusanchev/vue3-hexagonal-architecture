@@ -7,8 +7,5 @@ import { ModalTypes } from '@/components/modal/ModalTypes.ts'
 
 <template>
   <VToast />
-  <VModalComplete :id="ModalTypes.ADD_EMPLOYEE_MODAL">
-    Esto es un modal
-  </VModalComplete>
   <RouterView />
 </template>

@@ -12,5 +12,8 @@ export const useHomeStore = defineStore('home', {
     setEmployees(employees: Employee[]) {
       this.employees = employees
     },
+    setEmployee(employee: Employee) {
+      this.employees.unshift(employee)
+    },
   },
 })

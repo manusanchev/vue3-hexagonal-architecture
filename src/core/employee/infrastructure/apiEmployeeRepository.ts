@@ -2,7 +2,7 @@ import type { EmployeeRepository } from '@/core/employee/domain/EmployeeReposito
 import type { Http } from '@/core/shared/domain/Http.ts'
 import { Types } from '@/core/shared/domain/container/Types.ts'
 import { injectDependency } from '@/core/shared/infrastructure/container/utils/injectDependency.ts'
-import type { Employee } from '@/core/employee/domain/Employee.ts'
+import type { CreateEmployee, Employee } from '@/core/employee/domain/Employee.ts'
 
 const registerDependencies = async () => {
   return {
@@ -19,7 +19,12 @@ export async function apiEmployeeRepository(dependencies= registerDependencies()
     return await httpClient.get<Employee[]>(EMPLOYEES_URL)
   }
 
+  const create = async (employee: CreateEmployee) => {
+    return await httpClient.post<void>(EMPLOYEES_URL, employee)
+  }
+
   return {
+    create,
     getAll
   }
 }
