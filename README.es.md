@@ -16,8 +16,8 @@ Esta plantilla **facilita el desarrollo de aplicaciones** asegurando una **separ
 
 Todas las contribuciones serán revisadas y aceptadas si se alinean con la visión del proyecto.
 
-## 🚫 ¿Por qué no usar contenedores de inyección de dependencias?
-Los **contenedores de inyección de dependencias** tradicionales (como Inversify) pueden **reducir el rendimiento**, ya que registran todas las dependencias en el inicio de la aplicación, incluso aquellas que **no son necesarias**. Para **evitar esta sobrecarga**, esta plantilla usa un enfoque diferente.
+## 🚫 ¿Por qué no usar librerías de inyección de dependencias?
+Las **librerías de inyección de dependencias** tradicionales (como Inversify) pueden **reducir el rendimiento**, ya que registran todas las dependencias en el inicio de la aplicación, incluso aquellas que **no son necesarias**. Para **evitar esta sobrecarga**, esta plantilla usa un enfoque diferente.
 
 ## ⚡ Estrategia de Inyección de Dependencias Dinámica
 En lugar de utilizar un **contenedor tradicional de inyección de dependencias**, este proyecto **importa dinámicamente las dependencias** dentro de **repositorios y casos de uso**, garantizando:

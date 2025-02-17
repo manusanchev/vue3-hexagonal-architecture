@@ -17,8 +17,8 @@ We welcome contributions! Here’s how you can help:
 
 All contributions will be reviewed and merged if they align with the project’s vision.
 
-## 🚫 Why Not Use Dependency Injection Containers?
-Traditional **dependency injection containers** (like Inversify) can **slow down performance** by registering all dependencies at startup, even those that **aren’t needed**. To **avoid unnecessary overhead**, this template uses a different approach.
+## 🚫 Why Not Use Dependency Injection Libraries?
+Traditional **dependency injection libraries** (like Inversify) can **slow down performance** by registering all dependencies at startup, even those that **aren’t needed**. To **avoid unnecessary overhead**, this template uses a different approach.
 
 ## ⚡ Dynamic Dependency Injection Strategy
 Instead of a **traditional dependency injection container**, this project **dynamically imports dependencies** within **repositories and use cases**, ensuring:
