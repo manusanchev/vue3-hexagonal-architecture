@@ -17,7 +17,7 @@ export const fetchClient = async (dependencies = registerDependencies()): Promis
       .then((data) => data)) as Promise<T>
   }
 
-  const post = async <T>(url: string, body: any) => {
+  const post = async <T, B>(url: string, body: B) => {
     return (await fetch(`${baseUrl}${url}`, {
       method: 'POST',
       headers: {

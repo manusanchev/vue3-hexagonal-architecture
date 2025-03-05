@@ -20,7 +20,7 @@ export async function apiEmployeeRepository(dependencies= registerDependencies()
   }
 
   const create = async (employee: CreateEmployee) => {
-    return await httpClient.post<void>(EMPLOYEES_URL, employee)
+    return await httpClient.post<void, CreateEmployee>(EMPLOYEES_URL, employee)
   }
 
   return {
