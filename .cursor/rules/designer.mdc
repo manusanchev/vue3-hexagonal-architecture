@@ -1,0 +1,880 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Vue 3 Hexagonal Architecture - Design System Rules
+
+## 🎨 Design Philosophy
+
+This design system follows **shadcn/ui** principles adapted for Vue 3, emphasizing simplicity, accessibility, and consistency. Our approach prioritizes clean, minimal interfaces with excellent user experience.
+
+### Core Design Principles
+
+1. **Simplicity First**: Clean, uncluttered interfaces with clear visual hierarchy
+2. **Accessibility**: WCAG 2.1 AA compliant components with proper ARIA attributes
+3. **Consistency**: Unified design tokens and patterns across all components
+4. **Performance**: Lightweight components with minimal CSS and optimal rendering
+5. **Composability**: Modular components that work together seamlessly
+
+## 🎯 Design Tokens
+
+### Color Palette (Neutral-based like shadcn/ui)
+
+```typescript
+// Primary Colors (Neutral scale)
+const colors = {
+  // Background colors
+  background: 'hsl(0 0% 100%)',           // White
+  foreground: 'hsl(240 10% 3.9%)',       // Near black
+  
+  // Card/Surface colors
+  card: 'hsl(0 0% 100%)',                // White
+  cardForeground: 'hsl(240 10% 3.9%)',   // Near black
+  
+  // Muted colors
+  muted: 'hsl(240 4.8% 95.9%)',          // Light gray
+  mutedForeground: 'hsl(240 3.8% 46.1%)', // Medium gray
+  
+  // Border colors
+  border: 'hsl(240 5.9% 90%)',           // Light border
+  input: 'hsl(240 5.9% 90%)',            // Input border
+  
+  // Primary action colors
+  primary: 'hsl(240 5.9% 10%)',          // Dark
+  primaryForeground: 'hsl(0 0% 98%)',    // Light
+  
+  // Secondary colors
+  secondary: 'hsl(240 4.8% 95.9%)',      // Light gray
+  secondaryForeground: 'hsl(240 5.9% 10%)', // Dark
+  
+  // Accent colors
+  accent: 'hsl(240 4.8% 95.9%)',         // Light gray
+  accentForeground: 'hsl(240 5.9% 10%)', // Dark
+  
+  // Destructive colors
+  destructive: 'hsl(0 84.2% 60.2%)',     // Red
+  destructiveForeground: 'hsl(0 0% 98%)', // White
+  
+  // Ring/Focus colors
+  ring: 'hsl(240 5.9% 10%)',             // Dark
+}
+```
+
+### Typography Scale
+
+```css
+/* Font families */
+--font-sans: ui-sans-serif, system-ui, sans-serif;
+--font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, monospace;
+
+/* Font sizes (following shadcn/ui scale) */
+--text-xs: 0.75rem;     /* 12px */
+--text-sm: 0.875rem;    /* 14px */
+--text-base: 1rem;      /* 16px */
+--text-lg: 1.125rem;    /* 18px */
+--text-xl: 1.25rem;     /* 20px */
+--text-2xl: 1.5rem;     /* 24px */
+--text-3xl: 1.875rem;   /* 30px */
+--text-4xl: 2.25rem;    /* 36px */
+
+/* Line heights */
+--leading-none: 1;
+--leading-tight: 1.25;
+--leading-snug: 1.375;
+--leading-normal: 1.5;
+--leading-relaxed: 1.625;
+```
+
+### Spacing Scale
+
+```css
+/* Spacing (following 4px base unit) */
+--spacing-0: 0;
+--spacing-1: 0.25rem;   /* 4px */
+--spacing-2: 0.5rem;    /* 8px */
+--spacing-3: 0.75rem;   /* 12px */
+--spacing-4: 1rem;      /* 16px */
+--spacing-5: 1.25rem;   /* 20px */
+--spacing-6: 1.5rem;    /* 24px */
+--spacing-8: 2rem;      /* 32px */
+--spacing-10: 2.5rem;   /* 40px */
+--spacing-12: 3rem;     /* 48px */
+--spacing-16: 4rem;     /* 64px */
+```
+
+### Border Radius
+
+```css
+--radius-none: 0;
+--radius-sm: 0.125rem;  /* 2px */
+--radius-md: 0.375rem;  /* 6px */
+--radius-lg: 0.5rem;    /* 8px */
+--radius-xl: 0.75rem;   /* 12px */
+--radius-full: 9999px;
+```
+
+## 📁 Component Organization Rules
+
+### Global Components (`src/components/`)
+
+Global components are reusable across the entire application and follow this structure:
+
+```
+src/components/
+├── {component-name}/
+│   ├── V{ComponentName}.vue          # Main component
+│   ├── V{ComponentName}Base.vue      # Base/primitive version (optional)
+│   ├── use{ComponentName}.ts         # Component-specific composable (optional)
+│   ├── {ComponentName}Types.ts       # TypeScript interfaces (optional)
+│   └── variants/                     # Component variants (optional)
+│       ├── V{ComponentName}WithX.vue
+│       └── V{ComponentName}Y.vue
+```
+
+#### Naming Conventions
+
+- **Components**: `V{ComponentName}.vue` (e.g., `VButton.vue`, `VInput.vue`)
+- **Base components**: `V{ComponentName}Base.vue` (e.g., `VInputBase.vue`)
+- **Variants**: `V{ComponentName}With{Feature}.vue` (e.g., `VInputWithLabel.vue`)
+- **Composables**: `use{ComponentName}.ts` (e.g., `useModal.ts`, `useToast.ts`)
+- **Types**: `{ComponentName}Types.ts` (e.g., `ModalTypes.ts`)
+
+### Page-Specific Components (`src/views/{page}/components/`)
+
+Page-specific components are only used within their respective page:
+
+```
+src/views/{page}/
+├── {Page}View.vue
+├── components/
+│   ├── {Page}{ComponentName}.vue     # Page-specific component
+│   └── {Page}{ComponentName}Card.vue # Page-specific variant
+└── composables/
+    ├── use{Page}{Action}.ts          # Page-specific composable
+    └── use{Page}State.ts             # Page-specific state management
+```
+
+## 🧩 Component Design Patterns
+
+### 1. Base Component Pattern
+
+Create primitive components that handle core functionality:
+
+```vue
+<!-- VButtonBase.vue -->
+<script setup lang="ts">
+interface Props {
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
+  size?: 'default' | 'sm' | 'lg' | 'icon'
+  disabled?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  variant: 'default',
+  size: 'default',
+  disabled: false
+})
+
+const variantClasses = {
+  default: 'bg-neutral-900 text-neutral-50 hover:bg-neutral-900/90',
+  destructive: 'bg-red-500 text-neutral-50 hover:bg-red-500/90',
+  outline: 'border border-neutral-200 bg-white hover:bg-neutral-100 hover:text-neutral-900',
+  secondary: 'bg-neutral-100 text-neutral-900 hover:bg-neutral-100/80',
+  ghost: 'hover:bg-neutral-100 hover:text-neutral-900',
+  link: 'text-neutral-900 underline-offset-4 hover:underline'
+}
+
+const sizeClasses = {
+  default: 'h-10 px-4 py-2',
+  sm: 'h-9 rounded-md px-3',
+  lg: 'h-11 rounded-md px-8',
+  icon: 'h-10 w-10'
+}
+</script>
+
+<template>
+  <button
+    v-bind="$attrs"
+    :class="[
+      'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+      variantClasses[variant],
+      sizeClasses[size]
+    ]"
+    :disabled="disabled"
+  >
+    <slot />
+  </button>
+</template>
+```
+
+### 2. Composition Pattern
+
+Build complex components by composing simpler ones:
+
+```vue
+<!-- VButton.vue -->
+<script setup lang="ts">
+import { computed } from 'vue'
+import VButtonBase from './VButtonBase.vue'
+import VLoader from '@/components/loader/VLoader.vue'
+
+interface Props {
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
+  size?: 'default' | 'sm' | 'lg' | 'icon'
+  loading?: boolean
+  disabled?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  variant: 'default',
+  size: 'default',
+  loading: false,
+  disabled: false
+})
+
+const isDisabled = computed(() => props.disabled || props.loading)
+</script>
+
+<template>
+  <VButtonBase
+    v-bind="$attrs"
+    :variant="variant"
+    :size="size"
+    :disabled="isDisabled"
+    class="relative"
+  >
+    <VLoader v-if="loading" class="absolute inset-0" />
+    <span :class="{ 'opacity-0': loading }">
+      <slot />
+    </span>
+  </VButtonBase>
+</template>
+```
+
+### 3. Variant Pattern
+
+Create specific variants for common use cases:
+
+```vue
+<!-- variants/VButtonWithIcon.vue -->
+<script setup lang="ts">
+import VButton from '../VButton.vue'
+import type { LucideIcon } from 'lucide-vue-next'
+
+interface Props {
+  icon: LucideIcon
+  iconPosition?: 'left' | 'right'
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
+  size?: 'default' | 'sm' | 'lg'
+  loading?: boolean
+  disabled?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  iconPosition: 'left',
+  variant: 'default',
+  size: 'default',
+  loading: false,
+  disabled: false
+})
+</script>
+
+<template>
+  <VButton
+    v-bind="$attrs"
+    :variant="variant"
+    :size="size"
+    :loading="loading"
+    :disabled="disabled"
+  >
+    <component
+      :is="icon"
+      v-if="iconPosition === 'left'"
+      class="mr-2 h-4 w-4"
+    />
+    <slot />
+    <component
+      :is="icon"
+      v-if="iconPosition === 'right'"
+      class="ml-2 h-4 w-4"
+    />
+  </VButton>
+</template>
+```
+
+## 🎨 Styling Rules
+
+### 1. Tailwind CSS Classes
+
+**MUST** use Tailwind utility classes following shadcn/ui patterns:
+
+```vue
+<!-- ✅ Good: Using Tailwind utilities -->
+<div class="flex items-center space-x-2 rounded-lg border border-neutral-200 p-4">
+  <h2 class="text-lg font-semibold text-neutral-900">Title</h2>
+</div>
+
+<!-- ❌ Bad: Custom CSS -->
+<div class="custom-card">
+  <h2 class="custom-title">Title</h2>
+</div>
+```
+
+### 2. Component Class Structure
+
+Follow this order for Tailwind classes:
+
+1. **Layout**: `flex`, `grid`, `block`, `inline`
+2. **Positioning**: `relative`, `absolute`, `top-0`
+3. **Sizing**: `w-full`, `h-10`, `min-h-screen`
+4. **Spacing**: `p-4`, `m-2`, `space-x-2`
+5. **Typography**: `text-sm`, `font-medium`, `text-center`
+6. **Colors**: `bg-white`, `text-neutral-900`, `border-neutral-200`
+7. **Effects**: `shadow-sm`, `rounded-lg`, `opacity-50`
+8. **Interactions**: `hover:bg-neutral-100`, `focus:ring-2`
+9. **Responsive**: `sm:text-lg`, `md:flex-row`
+10. **State**: `disabled:opacity-50`, `aria-expanded:rotate-180`
+
+### 3. Focus and Accessibility
+
+**MUST** include proper focus states and ARIA attributes:
+
+```vue
+<template>
+  <button
+    class="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2"
+    :aria-pressed="isPressed"
+    :aria-label="buttonLabel"
+  >
+    <slot />
+  </button>
+</template>
+```
+
+### 4. Dark Mode Support (Future-ready)
+
+Prepare components for dark mode using CSS variables:
+
+```vue
+<template>
+  <div class="bg-background text-foreground border-border">
+    <!-- Content -->
+  </div>
+</template>
+```
+
+## 🔧 Component Implementation Rules
+
+### 1. Script Setup Structure
+
+**MUST** follow this order in `<script setup>`:
+
+```vue
+<script setup lang="ts">
+// 1. Imports (external libraries first, then internal)
+import { computed, ref } from 'vue'
+import { storeToRefs } from 'pinia'
+import type { LucideIcon } from 'lucide-vue-next'
+
+import VButton from '@/components/button/VButton.vue'
+import { useToast } from '@/components/toast/useToast.ts'
+
+// 2. Type definitions
+interface Props {
+  title: string
+  icon?: LucideIcon
+  disabled?: boolean
+}
+
+interface Emits {
+  click: [event: MouseEvent]
+  submit: [data: FormData]
+}
+
+// 3. Props and emits
+const props = withDefaults(defineProps<Props>(), {
+  disabled: false
+})
+
+const emit = defineEmits<Emits>()
+
+// 4. Composables and stores
+const { toast } = useToast()
+
+// 5. Reactive state
+const isLoading = ref(false)
+const formData = ref({})
+
+// 6. Computed properties
+const buttonLabel = computed(() => 
+  props.disabled ? 'Disabled' : props.title
+)
+
+// 7. Methods
+const handleClick = (event: MouseEvent) => {
+  emit('click', event)
+}
+
+// 8. Lifecycle hooks (if needed)
+// onMounted(() => {})
+</script>
+```
+
+### 2. Template Structure
+
+**MUST** follow semantic HTML and accessibility best practices:
+
+```vue
+<template>
+  <!-- Main container with proper semantic element -->
+  <article class="rounded-lg border border-neutral-200 bg-white p-6 shadow-sm">
+    <!-- Header section -->
+    <header class="mb-4">
+      <h2 class="text-lg font-semibold text-neutral-900">
+        {{ title }}
+      </h2>
+    </header>
+    
+    <!-- Content section -->
+    <main class="space-y-4">
+      <slot />
+    </main>
+    
+    <!-- Footer/Actions section -->
+    <footer class="mt-6 flex justify-end space-x-2">
+      <VButton variant="outline" @click="handleCancel">
+        Cancel
+      </VButton>
+      <VButton @click="handleSubmit">
+        Submit
+      </VButton>
+    </footer>
+  </article>
+</template>
+```
+
+### 3. Props Validation
+
+**MUST** use TypeScript interfaces with proper defaults:
+
+```vue
+<script setup lang="ts">
+interface Props {
+  // Required props (no default)
+  title: string
+  
+  // Optional props with defaults
+  variant?: 'default' | 'destructive' | 'outline'
+  size?: 'sm' | 'md' | 'lg'
+  disabled?: boolean
+  
+  // Complex types
+  items?: Array<{ id: string; label: string }>
+  
+  // Union types for strict validation
+  status?: 'idle' | 'loading' | 'success' | 'error'
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  variant: 'default',
+  size: 'md',
+  disabled: false,
+  items: () => [],
+  status: 'idle'
+})
+</script>
+```
+
+### 4. Event Handling
+
+**MUST** use typed emits and proper event naming:
+
+```vue
+<script setup lang="ts">
+interface Emits {
+  // Use descriptive event names
+  'update:modelValue': [value: string]
+  'item:select': [item: { id: string; label: string }]
+  'form:submit': [data: FormData]
+  'modal:close': []
+}
+
+const emit = defineEmits<Emits>()
+
+const handleItemSelect = (item: { id: string; label: string }) => {
+  emit('item:select', item)
+}
+</script>
+```
+
+## 🎭 Animation and Transitions
+
+### 1. Micro-interactions
+
+Use subtle animations for better UX:
+
+```vue
+<template>
+  <!-- Button hover and focus animations -->
+  <button class="transition-colors duration-200 hover:bg-neutral-100">
+    Click me
+  </button>
+  
+  <!-- Loading state animation -->
+  <div class="animate-pulse bg-neutral-200 rounded h-4 w-full"></div>
+  
+  <!-- Icon rotation -->
+  <ChevronDown class="transition-transform duration-200 group-aria-expanded:rotate-180" />
+</template>
+```
+
+### 2. Page Transitions
+
+Use Vue's transition system for page changes:
+
+```vue
+<template>
+  <Transition
+    name="page"
+    enter-active-class="transition-opacity duration-300"
+    enter-from-class="opacity-0"
+    enter-to-class="opacity-100"
+    leave-active-class="transition-opacity duration-300"
+    leave-from-class="opacity-100"
+    leave-to-class="opacity-0"
+  >
+    <router-view />
+  </Transition>
+</template>
+```
+
+### 3. Modal and Dialog Animations
+
+Use CSS animations for modals (as shown in current VModal.vue):
+
+```css
+/* Modal entrance/exit animations */
+dialog {
+  opacity: 0;
+  transition: all 0.2s allow-discrete;
+  transform: scale(0.95);
+}
+
+dialog:open {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@starting-style {
+  dialog:open {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+```
+
+## 📱 Responsive Design Rules
+
+### 1. Mobile-First Approach
+
+**MUST** design for mobile first, then enhance for larger screens:
+
+```vue
+<template>
+  <div class="
+    flex flex-col space-y-4
+    sm:flex-row sm:space-y-0 sm:space-x-4
+    lg:space-x-6
+  ">
+    <!-- Content adapts from vertical to horizontal layout -->
+  </div>
+</template>
+```
+
+### 2. Breakpoint Usage
+
+Use Tailwind's responsive prefixes consistently:
+
+```css
+/* Breakpoints */
+sm: 640px   /* Small devices */
+md: 768px   /* Medium devices */
+lg: 1024px  /* Large devices */
+xl: 1280px  /* Extra large devices */
+2xl: 1536px /* 2X large devices */
+```
+
+### 3. Touch-Friendly Interactions
+
+**MUST** ensure minimum 44px touch targets:
+
+```vue
+<template>
+  <!-- Minimum touch target size -->
+  <button class="min-h-[44px] min-w-[44px] p-2">
+    <Icon class="h-6 w-6" />
+  </button>
+</template>
+```
+
+## 🧪 Testing and Quality Rules
+
+### 1. Component Testing
+
+**MUST** test component behavior, not implementation:
+
+```typescript
+// ✅ Good: Testing behavior
+import { render, fireEvent } from '@testing-library/vue'
+import VButton from './VButton.vue'
+
+describe('VButton', () => {
+  it('should emit click event when clicked', async () => {
+    const { getByRole, emitted } = render(VButton, {
+      slots: { default: 'Click me' }
+    })
+    
+    const button = getByRole('button')
+    await fireEvent.click(button)
+    
+    expect(emitted().click).toBeTruthy()
+  })
+  
+  it('should be disabled when loading', () => {
+    const { getByRole } = render(VButton, {
+      props: { loading: true },
+      slots: { default: 'Loading' }
+    })
+    
+    const button = getByRole('button')
+    expect(button).toBeDisabled()
+  })
+})
+```
+
+### 2. Accessibility Testing
+
+**MUST** test for accessibility compliance:
+
+```typescript
+import { axe } from 'jest-axe'
+
+it('should not have accessibility violations', async () => {
+  const { container } = render(VButton, {
+    slots: { default: 'Accessible button' }
+  })
+  
+  const results = await axe(container)
+  expect(results).toHaveNoViolations()
+})
+```
+
+## 🚫 Anti-Patterns to Avoid
+
+### 1. Styling Anti-patterns
+
+```vue
+<!-- ❌ Bad: Inline styles -->
+<div style="color: red; margin: 10px;">Content</div>
+
+<!-- ❌ Bad: Custom CSS classes -->
+<div class="my-custom-card">Content</div>
+
+<!-- ❌ Bad: Magic numbers -->
+<div class="w-[247px] h-[83px]">Content</div>
+
+<!-- ✅ Good: Semantic Tailwind classes -->
+<div class="text-red-500 m-2.5 w-64 h-20">Content</div>
+```
+
+### 2. Component Anti-patterns
+
+```vue
+<!-- ❌ Bad: Watchers for simple computed values -->
+<script setup lang="ts">
+const count = ref(0)
+const doubleCount = ref(0)
+
+watch(count, (newCount) => {
+  doubleCount.value = newCount * 2
+})
+</script>
+
+<!-- ✅ Good: Use computed instead -->
+<script setup lang="ts">
+const count = ref(0)
+const doubleCount = computed(() => count.value * 2)
+</script>
+```
+
+### 3. Accessibility Anti-patterns
+
+```vue
+<!-- ❌ Bad: Missing accessibility attributes -->
+<div @click="handleClick">Clickable div</div>
+
+<!-- ❌ Bad: Poor color contrast -->
+<p class="text-gray-400 bg-gray-300">Hard to read text</p>
+
+<!-- ✅ Good: Proper semantic elements and contrast -->
+<button @click="handleClick" class="text-neutral-900 bg-white">
+  Clickable button
+</button>
+```
+
+## 📋 Component Checklist
+
+Before considering a component complete, ensure it meets these criteria:
+
+### ✅ Functionality
+- [ ] Component works as expected
+- [ ] All props are properly typed
+- [ ] Events are properly emitted
+- [ ] Error states are handled
+- [ ] Loading states are implemented (if applicable)
+
+### ✅ Accessibility
+- [ ] Proper semantic HTML elements
+- [ ] ARIA attributes where needed
+- [ ] Keyboard navigation support
+- [ ] Focus management
+- [ ] Screen reader compatibility
+- [ ] Color contrast meets WCAG AA standards
+
+### ✅ Design
+- [ ] Follows design system tokens
+- [ ] Consistent with other components
+- [ ] Responsive design implemented
+- [ ] Hover and focus states defined
+- [ ] Animation/transitions are smooth
+
+### ✅ Code Quality
+- [ ] TypeScript types are complete
+- [ ] No console.log statements
+- [ ] Proper error handling
+- [ ] Performance optimized
+- [ ] No unnecessary watchers
+
+### ✅ Testing
+- [ ] Unit tests written and passing
+- [ ] Accessibility tests included
+- [ ] Edge cases covered
+- [ ] Component documented
+
+## 🎯 Examples of Well-Designed Components
+
+### 1. Card Component
+
+```vue
+<!-- VCard.vue -->
+<script setup lang="ts">
+interface Props {
+  variant?: 'default' | 'outline' | 'filled'
+  padding?: 'none' | 'sm' | 'md' | 'lg'
+  hoverable?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  variant: 'default',
+  padding: 'md',
+  hoverable: false
+})
+
+const variantClasses = {
+  default: 'bg-white border border-neutral-200',
+  outline: 'bg-transparent border border-neutral-200',
+  filled: 'bg-neutral-50 border border-transparent'
+}
+
+const paddingClasses = {
+  none: '',
+  sm: 'p-3',
+  md: 'p-4',
+  lg: 'p-6'
+}
+</script>
+
+<template>
+  <div
+    :class="[
+      'rounded-lg shadow-sm transition-shadow',
+      variantClasses[variant],
+      paddingClasses[padding],
+      { 'hover:shadow-md cursor-pointer': hoverable }
+    ]"
+    v-bind="$attrs"
+  >
+    <slot />
+  </div>
+</template>
+```
+
+### 2. Form Field Component
+
+```vue
+<!-- VFormField.vue -->
+<script setup lang="ts">
+interface Props {
+  label: string
+  id: string
+  error?: string
+  hint?: string
+  required?: boolean
+}
+
+const props = defineProps<Props>()
+</script>
+
+<template>
+  <div class="space-y-2">
+    <label
+      :for="id"
+      class="text-sm font-medium text-neutral-900"
+      :class="{ 'after:content-[\"*\"] after:ml-0.5 after:text-red-500': required }"
+    >
+      {{ label }}
+    </label>
+    
+    <slot :id="id" :aria-describedby="error ? `${id}-error` : hint ? `${id}-hint` : undefined" />
+    
+    <p
+      v-if="hint && !error"
+      :id="`${id}-hint`"
+      class="text-sm text-neutral-500"
+    >
+      {{ hint }}
+    </p>
+    
+    <p
+      v-if="error"
+      :id="`${id}-error`"
+      class="text-sm text-red-600"
+      role="alert"
+    >
+      {{ error }}
+    </p>
+  </div>
+</template>
+```
+
+## 🔄 Continuous Improvement
+
+### Design System Evolution
+
+1. **Regular Reviews**: Monthly design system reviews to ensure consistency
+2. **Component Audits**: Quarterly audits of component usage and performance
+3. **User Feedback**: Collect and incorporate user experience feedback
+4. **Accessibility Audits**: Regular accessibility testing and improvements
+5. **Performance Monitoring**: Track component performance and optimize
+
+### Documentation Updates
+
+- Keep this document updated with new patterns and components
+- Document design decisions and rationale
+- Maintain a component showcase/storybook
+- Create migration guides for breaking changes
+
+---
+
+**Remember**: Great design is not just about how it looks, but how it works. Prioritize user experience, accessibility, and performance in every design decision. 

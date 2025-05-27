@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import VButton from '@/components/button/VButton.vue'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useFetchEmployees } from '@/views/home/composables/useFetchEmployees.ts'
 import { useHomeStore } from '@/stores/home.ts'
 import { useModal } from '@/components/modal/useModal.ts'
@@ -37,7 +37,7 @@ const showModal = () => {
           <div>Usuario</div>
           <div>Web</div>
         </div>
-        <div v-for="item in employees" class="grid grid-cols-4 gap-x-4 px-4 py-1.5">
+        <div v-for="(item, index) in employees" :key="index" class="grid grid-cols-4 gap-x-4 px-4 py-1.5">
           <div>{{ item.name }}</div>
           <div>{{ item.phone }}</div>
           <div>{{ item.username }}</div>

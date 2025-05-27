@@ -1,0 +1,933 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Vue 3 Hexagonal Architecture - Implementation Rules for Cursor
+
+## 🏗️ Architecture Overview
+
+This project follows **Hexagonal Architecture** (Ports and Adapters) principles with Vue 3, ensuring clean separation between business logic and external frameworks.
+
+### 📁 Directory Structure Rules
+
+```
+src/
+├── core/                           # Business Logic Layer (Hexagon Core)
+│   ├── {domain}/                   # Domain modules (e.g., employee, user)
+│   │   ├── domain/                 # Domain entities, value objects, interfaces
+│   │   ├── application/            # Use cases and application services
+│   │   └── infrastructure/         # External adapters (repositories, APIs)
+│   └── shared/                     # Shared domain and infrastructure
+│       ├── domain/                 # Shared domain concepts
+│       └── infrastructure/         # Shared infrastructure utilities
+├── components/                     # Reusable UI components
+├── views/                          # Page-level components
+│   └── {page}/
+│       ├── components/             # Page-specific components
+│       └── composables/            # Page-specific composables
+├── stores/                         # Pinia stores (state management)
+├── router/                         # Vue Router configuration
+└── plugins/                        # Vue plugins and configurations
+```
+
+## 🎯 Implementation Rules
+
+### 1. **Domain Layer Rules** (`src/core/{domain}/domain/`)
+
+#### Entities and Value Objects
+- **MUST** be pure TypeScript classes/interfaces with no external dependencies
+- **MUST** contain only business logic and domain rules
+- **MUST** use descriptive names that reflect business concepts
+- **MUST** be immutable when possible
+
+```typescript
+// ✅ Good: Pure domain entity
+export interface Employee {
+  readonly id: string
+  readonly name: string
+  readonly lastName: string
+  readonly email: string
+  readonly createdAt: Date
+}
+
+// ✅ Good: Domain repository interface
+export interface EmployeeRepository {
+  getAll(): Promise<Employee[]>
+  getById(id: string): Promise<Employee | null>
+  create(employee: CreateEmployee): Promise<void>
+  update(id: string, employee: UpdateEmployee): Promise<void>
+  delete(id: string): Promise<void>
+}
+```
+
+#### Repository Interfaces
+- **MUST** be defined in the domain layer
+- **MUST** use domain entities as parameters and return types
+- **MUST NOT** expose implementation details
+- **MUST** use async/await for all operations
+
+### 2. **Application Layer Rules** (`src/core/{domain}/application/`)
+
+#### Use Cases Structure
+- **MUST** be organized in folders by use case name (kebab-case)
+- **MUST** contain one main file with the use case logic
+- **MUST** include a test file for each use case
+- **MUST** use dynamic dependency injection pattern
+- **MUST** NOT contain store (pinia) or any vue tools
+
+```typescript
+// ✅ Good: Use case structure
+src/core/employee/application/
+├── get-all-employees/
+│   ├── getAllEmployees.ts
+│   └── getAllEmployees.test.ts
+├── create-employee/
+│   ├── createEmployee.ts
+│   └── createEmployee.test.ts
+└── update-employee/
+    ├── updateEmployee.ts
+    └── updateEmployee.test.ts
+```
+
+#### Use Case Implementation Pattern
+```typescript
+// ✅ Required pattern for all use cases
+import type { EmployeeRepository } from '@/core/employee/domain/EmployeeRepository.ts'
+import { Types } from '@/core/shared/domain/container/Types.ts'
+import { injectDependency } from '@/core/shared/infrastructure/container/utils/injectDependency.ts'
+import type { Logger } from '@/core/shared/domain/Logger.ts'
+
+const registerDependencies = async () => {
+  return {
+    [Types.EMPLOYEE_REPOSITORY]: await injectDependency<EmployeeRepository>(Types.EMPLOYEE_REPOSITORY),
+    [Types.LOGGER]: await injectDependency<Logger>(Types.LOGGER),
+  }
+}
+
+export const getAllEmployees = async (dependencies = registerDependencies()) => {
+  const { employeeRepository, logger } = await dependencies
+
+  const execute = async () => {
+    try {
+      return await employeeRepository.getAll()
+    } catch (error) {
+      logger.error(`Error in getAllEmployees: ${error}`)
+      throw error
+    }
+  }
+
+  return { execute }
+}
+```
+
+#### Use Case Rules
+- **MUST** use dynamic dependency injection with `registerDependencies()`
+- **MUST** accept dependencies as optional parameter for testing
+- **MUST** return an object with `execute` method
+- **MUST** include proper error handling with logging
+- **MUST** be pure functions with no side effects outside execute()
+- **MUST** validate input parameters when necessary
+
+### 3. **Infrastructure Layer Rules** (`src/core/{domain}/infrastructure/`)
+
+#### Repository Implementations
+- **MUST** implement domain repository interfaces
+- **MUST** handle external API calls, database operations, etc.
+- **MUST** transform external data to domain entities
+- **MUST** handle infrastructure-specific errors
+
+```typescript
+// ✅ Good: Repository implementation
+export class ApiEmployeeRepository implements EmployeeRepository {
+  constructor(private httpClient: HttpClient) {}
+
+  async getAll(): Promise<Employee[]> {
+    try {
+      const response = await this.httpClient.get('/employees')
+      return response.data.map(this.toDomainEntity)
+    } catch (error) {
+      throw new RepositoryError('Failed to fetch employees', error)
+    }
+  }
+
+  private toDomainEntity(apiData: any): Employee {
+    return {
+      id: apiData.id,
+      name: apiData.name,
+      lastName: apiData.last_name,
+      email: apiData.email,
+      createdAt: new Date(apiData.created_at)
+    }
+  }
+}
+```
+
+### 4. **Composables Rules** (`src/views/{page}/composables/`)
+
+#### Composable Implementation Pattern
+```typescript
+// ✅ Required pattern for composables
+import { getAllEmployees } from '@/core/employee/application/get-all-employees/getAllEmployees.ts'
+import { useHomeStore } from '@/stores/home.ts'
+import { useToast } from '@/components/toast/useToast.ts'
+
+export const useFetchEmployees = () => {
+  const homeStore = useHomeStore()
+  const { toast } = useToast()
+
+  const loadEmployees = async () => {
+    try {
+      const getAllEmployeesCommand = await getAllEmployees()
+      const employees = await getAllEmployeesCommand.execute()
+      homeStore.setEmployees(employees)
+    } catch (error) {
+      toast({
+        title: 'Error loading employees',
+        type: 'error'
+      })
+    }
+  }
+
+  return { loadEmployees }
+}
+```
+
+#### Composable Rules
+- **MUST** be the bridge between UI and application layer
+- **MUST** handle UI-specific concerns (loading states, error messages)
+- **MUST** use Pinia stores for state management if necesary
+- **MUST** use toast notifications for user feedback
+- **MUST** follow the naming convention `use{ActionName}`
+- **MUST NOT** contain business logic
+
+### 5. **Component Rules** (`src/components/` and `src/views/`)
+
+#### Component Structure
+- **MUST** use Composition API with `<script setup>`
+- **MUST** use TypeScript
+- **MUST** separate concerns using composables
+- **MUST** use Tailwind CSS for styling
+- **MUST** be responsive and accessible
+
+```vue
+<!-- ✅ Good: Component structure -->
+<template>
+  <div class="employee-list">
+    <LoaderComponent v-if="isLoading" />
+    <div v-else class="grid gap-4">
+      <EmployeeCard 
+        v-for="employee in employees" 
+        :key="employee.id"
+        :employee="employee"
+        @edit="handleEdit"
+        @delete="handleDelete"
+      />
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useHomeStore } from '@/stores/home.ts'
+import { useFetchEmployees } from '../composables/useFetchEmployees.ts'
+import type { Employee } from '@/core/employee/domain/Employee.ts'
+
+const homeStore = useHomeStore()
+const { employees, isLoading } = storeToRefs(homeStore)
+const { loadEmployees } = useFetchEmployees()
+
+const handleEdit = (employee: Employee) => {
+  // Handle edit logic
+}
+
+const handleDelete = (employee: Employee) => {
+  // Handle delete logic
+}
+
+onMounted(() => {
+  loadEmployees()
+})
+</script>
+```
+
+### 6. **Testing Rules**
+
+#### Unit Test Requirements
+- **MUST** test all use cases with mocked dependencies
+- **MUST** use `ts-mockito` for mocking
+- **MUST** test both success and error scenarios
+- **MUST** achieve minimum 80% code coverage
+
+```typescript
+// ✅ Required test pattern
+import { describe, it, expect } from 'vitest'
+import { mock, instance, when } from 'ts-mockito'
+import { getAllEmployees } from './getAllEmployees.ts'
+import type { EmployeeRepository } from '@/core/employee/domain/EmployeeRepository.ts'
+import type { Logger } from '@/core/shared/domain/Logger.ts'
+
+describe('GetAllEmployees', () => {
+  it('should return all employees successfully', async () => {
+    // Arrange
+    const mockEmployeeRepository = mock<EmployeeRepository>()
+    const mockLogger = mock<Logger>()
+    
+    const expectedEmployees = [
+      { id: '1', name: 'John', lastName: 'Doe', email: 'john@example.com', createdAt: new Date() }
+    ]
+    
+    when(mockEmployeeRepository.getAll()).thenResolve(expectedEmployees)
+    
+    const dependencies = Promise.resolve({
+      employeeRepository: instance(mockEmployeeRepository),
+      logger: instance(mockLogger)
+    })
+
+    // Act
+    const useCase = await getAllEmployees(() => dependencies)
+    const result = await useCase.execute()
+
+    // Assert
+    expect(result).toEqual(expectedEmployees)
+  })
+})
+```
+
+### 7. **File Naming Conventions**
+
+- **Domain entities**: PascalCase (e.g., `Employee.ts`, `User.ts`)
+- **Interfaces**: PascalCase with descriptive names (e.g., `EmployeeRepository.ts`)
+- **Use cases**: camelCase (e.g., `getAllEmployees.ts`, `createEmployee.ts`)
+- **Composables**: camelCase with `use` prefix (e.g., `useFetchEmployees.ts`)
+- **Components**: PascalCase (e.g., `EmployeeCard.vue`, `LoaderComponent.vue`)
+- **Stores**: camelCase (e.g., `home.ts`, `auth.ts`)
+- **Types/Constants**: PascalCase (e.g., `Types.ts`, `ApiEndpoints.ts`)
+
+### 8. **Import Rules**
+
+#### Absolute Imports
+- **MUST** use `@/` alias for all internal imports
+- **MUST** include `.ts` extension for TypeScript files
+- **MUST** organize imports: external libraries first, then internal imports
+
+```typescript
+// ✅ Good: Import organization
+import { ref, computed } from 'vue'
+import { storeToRefs } from 'pinia'
+
+import type { Employee } from '@/core/employee/domain/Employee.ts'
+import { getAllEmployees } from '@/core/employee/application/get-all-employees/getAllEmployees.ts'
+import { useHomeStore } from '@/stores/home.ts'
+```
+
+### 9. **Error Handling Rules**
+
+#### Application Layer
+- **MUST** catch and log all errors
+- **MUST** re-throw errors for upper layers to handle
+- **MUST** use structured logging with context
+
+#### UI Layer
+- **MUST** show user-friendly error messages
+- **MUST** use toast notifications for errors
+- **MUST** handle loading states properly
+
+### 10. **State Management Rules** (Pinia)
+
+#### Store Structure
+```typescript
+// ✅ Required store pattern
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import type { Employee } from '@/core/employee/domain/Employee.ts'
+
+export const useHomeStore = defineStore('home', () => {
+  // State
+  const employees = ref<Employee[]>([])
+  const isLoading = ref(false)
+
+  // Getters
+  const employeeCount = computed(() => employees.value.length)
+
+  // Actions
+  const setEmployees = (newEmployees: Employee[]) => {
+    employees.value = newEmployees
+  }
+
+  const setLoading = (loading: boolean) => {
+    isLoading.value = loading
+  }
+
+  return {
+    // State
+    employees,
+    isLoading,
+    // Getters
+    employeeCount,
+    // Actions
+    setEmployees,
+    setLoading
+  }
+})
+```
+
+### 11. **Performance Rules**
+
+- **MUST** use dynamic imports for use cases to enable lazy loading
+- **MUST** implement proper loading states
+- **MUST** use Vue's `defineAsyncComponent` for large components
+- **MUST** optimize bundle size with tree shaking
+
+### 12. **Code Quality Rules**
+
+#### Linting and Formatting
+- **MUST** pass ESLint and Oxlint checks
+- **MUST** use Prettier for code formatting
+- **MUST** follow TypeScript strict mode
+- **MUST** have no console.log statements in production code
+
+#### Documentation
+- **MUST** include JSDoc comments for public APIs
+- **MUST** use descriptive variable and function names
+- **MUST** include README for complex modules
+
+## 📋 Step-by-Step Implementation Guide
+
+This section provides detailed instructions for creating new features following the hexagonal architecture pattern.
+
+### 13. **Creating a New Use Case**
+
+#### Step 1: Create Use Case Directory Structure
+```bash
+# Example: Creating a "delete-employee" use case
+src/core/employee/application/
+└── delete-employee/
+    ├── deleteEmployee.ts
+    └── deleteEmployee.test.ts
+```
+
+#### Step 2: Implement the Use Case
+```typescript
+// src/core/employee/application/delete-employee/deleteEmployee.ts
+import type { EmployeeRepository } from '@/core/employee/domain/EmployeeRepository.ts'
+import { Types } from '@/core/shared/domain/container/Types.ts'
+import { injectDependency } from '@/core/shared/infrastructure/container/utils/injectDependency.ts'
+import type { Logger } from '@/core/shared/domain/Logger.ts'
+
+interface DeleteEmployeeParams {
+  id: string
+}
+
+const registerDependencies = async () => {
+  return {
+    employeeRepository: await injectDependency<EmployeeRepository>(Types.EMPLOYEE_REPOSITORY),
+    logger: await injectDependency<Logger>(Types.LOGGER),
+  }
+}
+
+export const deleteEmployee = async (dependencies = registerDependencies()) => {
+  const { employeeRepository, logger } = await dependencies
+
+  const execute = async (params: DeleteEmployeeParams) => {
+    try {
+      // Validate input
+      if (!params.id) {
+        throw new Error('Employee ID is required')
+      }
+
+      // Check if employee exists
+      const employee = await employeeRepository.getById(params.id)
+      if (!employee) {
+        throw new Error(`Employee with ID ${params.id} not found`)
+      }
+
+      // Delete employee
+      await employeeRepository.delete(params.id)
+      
+      logger.info(`Employee deleted successfully: ${params.id}`)
+    } catch (error) {
+      logger.error(`Error in deleteEmployee: ${error}`)
+      throw error
+    }
+  }
+
+  return { execute }
+}
+```
+
+#### Step 3: Create Unit Tests
+```typescript
+// src/core/employee/application/delete-employee/deleteEmployee.test.ts
+import { describe, it, expect } from 'vitest'
+import { mock, instance, when, verify } from 'ts-mockito'
+import { deleteEmployee } from './deleteEmployee.ts'
+import type { EmployeeRepository } from '@/core/employee/domain/EmployeeRepository.ts'
+import type { Logger } from '@/core/shared/domain/Logger.ts'
+import type { Employee } from '@/core/employee/domain/Employee.ts'
+
+describe('DeleteEmployee', () => {
+  it('should delete employee successfully', async () => {
+    // Arrange
+    const mockEmployeeRepository = mock<EmployeeRepository>()
+    const mockLogger = mock<Logger>()
+    
+    const existingEmployee: Employee = {
+      id: '1',
+      name: 'John',
+      lastName: 'Doe',
+      email: 'john@example.com',
+      createdAt: new Date()
+    }
+    
+    when(mockEmployeeRepository.getById('1')).thenResolve(existingEmployee)
+    when(mockEmployeeRepository.delete('1')).thenResolve()
+    
+    const dependencies = Promise.resolve({
+      employeeRepository: instance(mockEmployeeRepository),
+      logger: instance(mockLogger)
+    })
+
+    // Act
+    const useCase = await deleteEmployee(() => dependencies)
+    await useCase.execute({ id: '1' })
+
+    // Assert
+    verify(mockEmployeeRepository.delete('1')).once()
+  })
+
+  it('should throw error when employee not found', async () => {
+    // Arrange
+    const mockEmployeeRepository = mock<EmployeeRepository>()
+    const mockLogger = mock<Logger>()
+    
+    when(mockEmployeeRepository.getById('999')).thenResolve(null)
+    
+    const dependencies = Promise.resolve({
+      employeeRepository: instance(mockEmployeeRepository),
+      logger: instance(mockLogger)
+    })
+
+    // Act & Assert
+    const useCase = await deleteEmployee(() => dependencies)
+    await expect(useCase.execute({ id: '999' })).rejects.toThrow('Employee with ID 999 not found')
+  })
+})
+```
+
+### 14. **Creating New Infrastructure Implementation**
+
+#### Step 1: Update Domain Repository Interface (if needed)
+```typescript
+// src/core/employee/domain/EmployeeRepository.ts
+export interface EmployeeRepository {
+  getAll(): Promise<Employee[]>
+  getById(id: string): Promise<Employee | null>
+  create(employee: CreateEmployee): Promise<void>
+  update(id: string, employee: UpdateEmployee): Promise<void>
+  delete(id: string): Promise<void> // ← Add new method if not exists
+}
+```
+
+#### Step 2: Update Infrastructure Implementation
+```typescript
+// src/core/employee/infrastructure/apiEmployeeRepository.ts
+import type { EmployeeRepository } from '@/core/employee/domain/EmployeeRepository.ts'
+import type { Employee, CreateEmployee, UpdateEmployee } from '@/core/employee/domain/Employee.ts'
+import type { Http } from '@/core/shared/domain/Http.ts'
+import { Types } from '@/core/shared/domain/container/Types.ts'
+import { injectDependency } from '@/core/shared/infrastructure/container/utils/injectDependency.ts'
+
+const registerDependencies = async () => {
+  return {
+    httpClient: await injectDependency<Http>(Types.HTTP_CLIENT),
+  }
+}
+
+export const apiEmployeeRepository = async (dependencies = registerDependencies()) => {
+  const { httpClient } = await dependencies
+
+  const getAll = async (): Promise<Employee[]> => {
+    try {
+      const response = await httpClient.get('/employees')
+      return response.data.map(toDomainEntity)
+    } catch (error) {
+      throw new Error(`Failed to fetch employees: ${error}`)
+    }
+  }
+
+  const getById = async (id: string): Promise<Employee | null> => {
+    try {
+      const response = await httpClient.get(`/employees/${id}`)
+      return toDomainEntity(response.data)
+    } catch (error) {
+      if (error.status === 404) return null
+      throw new Error(`Failed to fetch employee: ${error}`)
+    }
+  }
+
+  const create = async (employee: CreateEmployee): Promise<void> => {
+    try {
+      await httpClient.post('/employees', toApiEntity(employee))
+    } catch (error) {
+      throw new Error(`Failed to create employee: ${error}`)
+    }
+  }
+
+  const update = async (id: string, employee: UpdateEmployee): Promise<void> => {
+    try {
+      await httpClient.put(`/employees/${id}`, toApiEntity(employee))
+    } catch (error) {
+      throw new Error(`Failed to update employee: ${error}`)
+    }
+  }
+
+  const delete = async (id: string): Promise<void> => {
+    try {
+      await httpClient.delete(`/employees/${id}`)
+    } catch (error) {
+      throw new Error(`Failed to delete employee: ${error}`)
+    }
+  }
+
+  const toDomainEntity = (apiData: any): Employee => {
+    return {
+      id: apiData.id,
+      name: apiData.name,
+      lastName: apiData.last_name,
+      email: apiData.email,
+      createdAt: new Date(apiData.created_at)
+    }
+  }
+
+  const toApiEntity = (domainData: CreateEmployee | UpdateEmployee): any => {
+    return {
+      name: domainData.name,
+      last_name: domainData.lastName,
+      email: domainData.email
+    }
+  }
+
+  return {
+    getAll,
+    getById,
+    create,
+    update,
+    delete
+  } as EmployeeRepository
+}
+```
+
+### 15. **Registering Dependencies in Container**
+
+#### Step 1: Add Type Constants
+```typescript
+// src/core/shared/domain/container/Types.ts
+export enum Types {
+  EMPLOYEE_REPOSITORY = 'employeeRepository',
+  USER_REPOSITORY = 'userRepository', // ← Add new repository type
+  HTTP_CLIENT = 'httpClient',
+  LOGGER = 'logger',
+  UUID_GENERATOR = 'uuidGenerator',
+  EMAIL_SERVICE = 'emailService', // ← Add new service type
+}
+```
+
+#### Step 2: Register in Container
+```typescript
+// src/core/shared/infrastructure/container/container.ts
+import { Types } from '@/core/shared/domain/container/Types.ts'
+import { EnvTypes } from '@/core/shared/domain/container/EnvTypes.ts'
+
+const repositoriesContainer = {
+  [Types.EMPLOYEE_REPOSITORY]: () => import('@/core/employee/infrastructure/apiEmployeeRepository.ts'),
+  [Types.USER_REPOSITORY]: () => import('@/core/user/infrastructure/apiUserRepository.ts'), // ← Add new repository
+}
+
+const infrastructureContainer = {
+  [Types.HTTP_CLIENT]: () => import('@/core/shared/infrastructure/fetchClient.ts'),
+  [Types.LOGGER]: () => import('@/core/shared/infrastructure/sentryLogger.ts'),
+  [Types.UUID_GENERATOR]: () => import('@/core/shared/infrastructure/uuidCryptoGenerator.ts'),
+  [Types.EMAIL_SERVICE]: () => import('@/core/shared/infrastructure/emailService.ts'), // ← Add new service
+}
+
+const environmentContainer: Record<string, () => Promise<any>> = {
+  [EnvTypes.BASE_URL]: () => import.meta.env.VITE_BASE_URL,
+}
+
+const container: Record<string, () => Promise<any>> = {
+  ...repositoriesContainer,
+  ...infrastructureContainer
+}
+
+export { container, environmentContainer }
+```
+
+### 16. **Creating New Composables**
+
+#### Step 1: Create Composable File
+```typescript
+// src/views/home/composables/useDeleteEmployee.ts
+import { deleteEmployee } from '@/core/employee/application/delete-employee/deleteEmployee.ts'
+import { useHomeStore } from '@/stores/home.ts'
+import { useToast } from '@/components/toast/useToast.ts'
+
+export const useDeleteEmployee = () => {
+  const homeStore = useHomeStore()
+  const { toast } = useToast()
+
+  const removeEmployee = async (employeeId: string) => {
+    try {
+      homeStore.setLoading(true)
+      
+      const deleteEmployeeCommand = await deleteEmployee()
+      await deleteEmployeeCommand.execute({ id: employeeId })
+      
+      // Remove from store
+      homeStore.removeEmployee(employeeId)
+      
+      toast({
+        title: 'Employee deleted successfully',
+        type: 'success'
+      })
+    } catch (error) {
+      toast({
+        title: 'Error deleting employee',
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        type: 'error'
+      })
+    } finally {
+      homeStore.setLoading(false)
+    }
+  }
+
+  return { removeEmployee }
+}
+```
+
+#### Step 2: Update Store (if needed)
+```typescript
+// src/stores/home.ts
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import type { Employee } from '@/core/employee/domain/Employee.ts'
+
+export const useHomeStore = defineStore('home', () => {
+  // State
+  const employees = ref<Employee[]>([])
+  const isLoading = ref(false)
+
+  // Getters
+  const employeeCount = computed(() => employees.value.length)
+
+  // Actions
+  const setEmployees = (newEmployees: Employee[]) => {
+    employees.value = newEmployees
+  }
+
+  const addEmployee = (employee: Employee) => {
+    employees.value.push(employee)
+  }
+
+  const updateEmployee = (id: string, updatedEmployee: Partial<Employee>) => {
+    const index = employees.value.findIndex(emp => emp.id === id)
+    if (index !== -1) {
+      employees.value[index] = { ...employees.value[index], ...updatedEmployee }
+    }
+  }
+
+  const removeEmployee = (id: string) => {
+    employees.value = employees.value.filter(emp => emp.id !== id)
+  }
+
+  const setLoading = (loading: boolean) => {
+    isLoading.value = loading
+  }
+
+  return {
+    // State
+    employees,
+    isLoading,
+    // Getters
+    employeeCount,
+    // Actions
+    setEmployees,
+    addEmployee,
+    updateEmployee,
+    removeEmployee,
+    setLoading
+  }
+})
+```
+
+#### Step 3: Use in Component
+```vue
+<!-- src/views/home/components/EmployeeCard.vue -->
+<template>
+  <div class="employee-card bg-white rounded-lg shadow-md p-6">
+    <div class="flex justify-between items-start">
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900">
+          {{ employee.name }} {{ employee.lastName }}
+        </h3>
+        <p class="text-gray-600">{{ employee.email }}</p>
+        <p class="text-sm text-gray-500">
+          Created: {{ formatDate(employee.createdAt) }}
+        </p>
+      </div>
+      <div class="flex space-x-2">
+        <ButtonComponent
+          variant="secondary"
+          size="sm"
+          @click="$emit('edit', employee)"
+        >
+          Edit
+        </ButtonComponent>
+        <ButtonComponent
+          variant="danger"
+          size="sm"
+          :loading="isDeleting"
+          @click="handleDelete"
+        >
+          Delete
+        </ButtonComponent>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import type { Employee } from '@/core/employee/domain/Employee.ts'
+import { useDeleteEmployee } from '../composables/useDeleteEmployee.ts'
+import ButtonComponent from '@/components/button/ButtonComponent.vue'
+
+interface Props {
+  employee: Employee
+}
+
+interface Emits {
+  edit: [employee: Employee]
+}
+
+defineProps<Props>()
+defineEmits<Emits>()
+
+const { removeEmployee } = useDeleteEmployee()
+const isDeleting = ref(false)
+
+const handleDelete = async () => {
+  if (confirm(`Are you sure you want to delete ${props.employee.name}?`)) {
+    isDeleting.value = true
+    try {
+      await removeEmployee(props.employee.id)
+    } finally {
+      isDeleting.value = false
+    }
+  }
+}
+
+const formatDate = (date: Date) => {
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  }).format(date)
+}
+</script>
+```
+
+### 17. **Complete Feature Implementation Checklist**
+
+When implementing a new feature, follow this checklist:
+
+#### Domain Layer ✅
+- [ ] Define or update domain entities in `src/core/{domain}/domain/`
+- [ ] Create or update repository interfaces
+- [ ] Add domain-specific value objects if needed
+- [ ] Ensure all domain types are properly exported
+
+#### Application Layer ✅
+- [ ] Create use case directory with kebab-case naming
+- [ ] Implement use case following the required pattern
+- [ ] Add comprehensive unit tests
+- [ ] Include proper error handling and logging
+- [ ] Validate input parameters
+
+#### Infrastructure Layer ✅
+- [ ] Implement repository interface in infrastructure layer
+- [ ] Handle external API transformations
+- [ ] Add proper error handling for infrastructure concerns
+- [ ] Test infrastructure implementations
+
+#### Container Registration ✅
+- [ ] Add new type constants to `Types.ts`
+- [ ] Register dependencies in `container.ts`
+- [ ] Ensure proper dynamic imports
+- [ ] Test dependency injection
+
+#### UI Layer ✅
+- [ ] Create composables for UI-business logic bridge
+- [ ] Update Pinia stores if needed
+- [ ] Implement or update components
+- [ ] Add proper loading states and error handling
+- [ ] Include user feedback (toasts, notifications)
+
+#### Testing ✅
+- [ ] Unit tests for use cases (minimum 80% coverage)
+- [ ] Integration tests for composables
+- [ ] Component tests for UI interactions
+- [ ] End-to-end tests for critical user flows
+
+#### Documentation ✅
+- [ ] Update API documentation if needed
+- [ ] Add JSDoc comments for public interfaces
+- [ ] Update README if new setup is required
+
+## 🚀 Development Workflow
+
+### Data Flow
+```
+Route → Page Component → Composable → Use Case → Repository → External API/DB
+                    ↓
+                 Pinia Store ← Domain Entity ← Infrastructure Adapter
+```
+
+### Adding New Features
+1. **Define domain entities** in `src/core/{domain}/domain/`
+2. **Create repository interface** in domain layer
+3. **Implement use cases** in `src/core/{domain}/application/`
+4. **Create repository implementation** in `src/core/{domain}/infrastructure/`
+5. **Build composables** for UI integration
+6. **Create/update components** and views
+7. **Add comprehensive tests** for all layers
+
+### Commands
+- `pnpm dev` - Start development server
+- `pnpm test` - Run tests
+- `pnpm lint` - Run linting
+- `pnpm format` - Format code
+- `pnpm build` - Build for production
+
+## ⚠️ Anti-Patterns to Avoid
+
+- ❌ **NO** direct API calls from components
+- ❌ **NO** business logic in composables or components
+- ❌ **NO** framework dependencies in domain layer
+- ❌ **NO** circular dependencies between layers
+- ❌ **NO** global state outside Pinia stores
+- ❌ **NO** direct database access from use cases
+- ❌ **NO** mixing UI concerns with business logic
+
+## 🎯 Benefits of This Architecture
+
+- **Testability**: Easy to mock dependencies and test in isolation
+- **Maintainability**: Clear separation of concerns
+- **Scalability**: Easy to add new features without affecting existing code
+- **Framework Independence**: Business logic is not tied to Vue
+- **Performance**: Dynamic dependency injection loads only what's needed
+
+---
+
+**Remember**: The goal is to keep the business logic (domain + application layers) completely independent of the UI framework and external dependencies. This ensures your application is maintainable, testable, and adaptable to future changes. 
