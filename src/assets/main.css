@@ -1,7 +1,12 @@
+@import "./font.css";
 @import "tailwindcss";
+
+@theme {
+  --font-geist: "Geist", ui-sans-serif, system-ui, sans-serif;
+}
 
 @layer base {
   html {
-    @apply bg-gray-50;
+    @apply bg-gray-50 font-geist;
   }
 }
