@@ -15,7 +15,7 @@ export const useFetchEmployees = () => {
       homeStore.setEmployees(employees)
     }catch(error) {
       toast({
-          title: 'Error al cargar empleados'
+          title: 'Error loading employees'
       })
     } finally {
       homeStore.setLoading(false)

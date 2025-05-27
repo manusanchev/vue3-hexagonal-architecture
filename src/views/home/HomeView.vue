@@ -25,8 +25,8 @@ const showModal = () => {
   <div class="mx-auto w-full">
     <div class="mx-auto w-full max-w-2xl mt-4">
       <div class="flex gap-x-4 items-center justify-between">
-        <h1 class="font-medium">Empleados ({{ homeStore.countEmployees }})</h1>
-        <VButton @click="showModal"> Añadir </VButton>
+        <h1 class="font-medium">Employees ({{ homeStore.countEmployees }})</h1>
+        <VButton @click="showModal"> Add </VButton>
         <CreateEmployeeModal />
       </div>
       <div class="mt-4">

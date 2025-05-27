@@ -41,26 +41,26 @@ const handleConfirm = async () => {
 <template>
   <VModal :id="MODAL_ID">
     <VModalClose @click="handleClose" />
-    <VModalHeader> Añadir empleado </VModalHeader>
+    <VModalHeader> Add Employee </VModalHeader>
     <form @submit.prevent="handleConfirm">
       <VModalContent class="flex flex-col gap-y-6">
-        <VInputWithLabel id="name" placeholder="Nombre" v-model="employee.name" required>
-          Nombre
+        <VInputWithLabel id="name" placeholder="Name" v-model="employee.name" required>
+          Name
         </VInputWithLabel>
-        <VInputWithLabel id="phone" placeholder="Teléfono" v-model="employee.phone" required>
-          Teléfono
+        <VInputWithLabel id="phone" placeholder="Phone" v-model="employee.phone" required>
+          Phone
         </VInputWithLabel>
-        <VInputWithLabel id="user" placeholder="Usuario" v-model="employee.username" required>
-          Usuario
+        <VInputWithLabel id="user" placeholder="Username" v-model="employee.username" required>
+          Username
         </VInputWithLabel>
-        <VInputWithLabel id="web" placeholder="Web" v-model="employee.website" required>
-          Web
+        <VInputWithLabel id="web" placeholder="Website" v-model="employee.website" required>
+          Website
         </VInputWithLabel>
       </VModalContent>
       <VModalFooter>
-        <VButton type="button" variant="tertiary" @click="handleClose"> cancelar </VButton>
+        <VButton type="button" variant="tertiary" @click="handleClose"> Cancel </VButton>
         <VButton :loading="isLoading" type="submit" variant="primary">
-          Añadir
+          Add
         </VButton>
       </VModalFooter>
     </form>

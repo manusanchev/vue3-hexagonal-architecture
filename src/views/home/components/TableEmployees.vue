@@ -15,10 +15,10 @@ const isLoading = computed(() => homeStore.isLoading)
 <template>
   <VTable>
     <VTableHeader>
-      <VTableCell>Nombre</VTableCell>
-      <VTableCell>Teléfono</VTableCell>
-      <VTableCell>Usuario</VTableCell>
-      <VTableCell>Web</VTableCell>
+      <VTableCell>Name</VTableCell>
+      <VTableCell>Phone</VTableCell>
+      <VTableCell>Username</VTableCell>
+      <VTableCell>Website</VTableCell>
     </VTableHeader>
     <div v-if="isLoading" class="flex justify-center py-8">
       <VLoader />
