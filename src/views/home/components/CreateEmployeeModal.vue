@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { ModalTypes } from '@/components/modal/ModalTypes.ts'
-import VModalComplete from '@/components/modal/variants/VModalComplete.vue'
 import VInputWithLabel from '@/components/input/variants/VInputWithLabel.vue'
 import { useSaveEmployee } from '@/views/home/composables/useSaveEmployee.ts'
-import { reactive, type Ref, ref } from 'vue'
+import { type Ref, ref } from 'vue'
 import VModalHeader from '@/components/modal/VModalHeader.vue'
 import VModal from '@/components/modal/VModal.vue'
 import VModalContent from '@/components/modal/VModalContent.vue'

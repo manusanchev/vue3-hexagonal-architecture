@@ -9,6 +9,7 @@ export const useFetchEmployees = () => {
 
   const loadEmployees = async () => {
     try {
+      homeStore.setLoading(true)
       const getAllEmployeesCommand = await getAllEmployees()
       const employees = await getAllEmployeesCommand.execute()
       homeStore.setEmployees(employees)
@@ -16,6 +17,8 @@ export const useFetchEmployees = () => {
       toast({
           title: 'Error al cargar empleados'
       })
+    } finally {
+      homeStore.setLoading(false)
     }
 
   }

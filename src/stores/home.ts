@@ -4,6 +4,7 @@ import type { Employee } from '@/core/employee/domain/Employee.ts'
 export const useHomeStore = defineStore('home', {
   state: () => ({
     employees: [] as Employee[],
+    isLoading: false,
   }),
   getters: {
     countEmployees: (state) => state.employees.length,
@@ -14,6 +15,9 @@ export const useHomeStore = defineStore('home', {
     },
     setEmployee(employee: Employee) {
       this.employees.unshift(employee)
+    },
+    setLoading(loading: boolean) {
+      this.isLoading = loading
     },
   },
 })
