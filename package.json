@@ -28,14 +28,9 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
-    "@chromatic-com/storybook": "^3.2.7",
-    "@storybook/addon-essentials": "^8.6.14",
-    "@storybook/addon-onboarding": "^8.6.14",
-    "@storybook/blocks": "^8.6.14",
-    "@storybook/experimental-addon-test": "^8.6.14",
-    "@storybook/test": "^8.6.14",
-    "@storybook/vue3": "^8.6.14",
-    "@storybook/vue3-vite": "^8.6.14",
+    "@chromatic-com/storybook": "^4.1.1",
+    "@storybook/addon-onboarding": "^9.1.5",
+    "@storybook/vue3-vite": "^9.1.5",
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^22.18.3",
     "@vitejs/plugin-vue": "^5.2.4",
@@ -46,7 +41,7 @@
     "@vue/tsconfig": "^0.7.0",
     "eslint": "^9.35.0",
     "eslint-plugin-oxlint": "^0.15.15",
-    "eslint-plugin-storybook": "^0.12.0",
+    "eslint-plugin-storybook": "^9.1.5",
     "eslint-plugin-vue": "^9.33.0",
     "husky": "^9.1.7",
     "jiti": "^2.5.1",
@@ -54,13 +49,15 @@
     "oxlint": "^0.15.15",
     "playwright": "^1.55.0",
     "prettier": "^3.6.2",
-    "storybook": "^8.6.14",
+    "storybook": "^9.1.5",
     "ts-mockito": "^2.6.1",
     "typescript": "~5.7.3",
     "vite": "^6.3.6",
     "vite-plugin-vue-devtools": "^7.7.7",
     "vitest": "^3.2.4",
-    "vue-tsc": "^2.2.12"
+    "vue-tsc": "^2.2.12",
+    "@storybook/addon-vitest": "9.1.5",
+    "@storybook/addon-docs": "^9.1.5"
   },
   "eslintConfig": {
     "extends": [

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/vue3'
+import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import VButton from './VButton.vue'
 
 const meta: Meta<typeof VButton> = {

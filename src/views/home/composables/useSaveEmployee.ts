@@ -17,13 +17,12 @@ export const useSaveEmployee = () => {
       await createEmployeeUseCase.execute({ employee })
       homeStore.setEmployee(employee)
       toast({
-        title: 'Empleado guardado exitosamente'
+        title: 'Employee saved successfully'
       })
-    }catch (error) {
+    } catch (error) {
       hasErrors = true
-      // Use toast or mutate errors ref to show errors
       toast({
-        title: 'Error al guardar empleado'
+        title: 'Error saving employee'
       })
     } finally {
       stopLoading()

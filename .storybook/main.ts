@@ -6,14 +6,17 @@ const config: StorybookConfig = {
     "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"
   ],
   "addons": [
-    "@storybook/addon-essentials",
     "@storybook/addon-onboarding",
     "@chromatic-com/storybook",
-    "@storybook/experimental-addon-test"
+    "@storybook/addon-vitest",
+    "@storybook/addon-docs"
   ],
   "framework": {
     "name": "@storybook/vue3-vite",
     "options": {}
+  },
+  core: {
+    disableTelemetry: true,
   },
   async viteFinal(config) {
     // Merge custom configuration into the default config

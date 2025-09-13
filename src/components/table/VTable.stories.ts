@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/vue3'
+import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import VTable from './VTable.vue'
 import VTableHeader from './VTableHeader.vue'
 import VTableRow from './VTableRow.vue'
