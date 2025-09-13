@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { deepEqual, instance, mock, when } from 'ts-mockito'
-import { createEmployee } from '@/core/employee/application/create-employee/createEmployee'
-import type { EmployeeRepository } from '@/core/employee/domain/EmployeeRepository'
-import type { Logger } from '@/core/shared/domain/Logger'
+import { createEmployee } from '@/core/employee/application/create-employee/createEmployee.ts'
+import type { EmployeeRepository } from '@/core/employee/domain/EmployeeRepository.ts'
+import type { Logger } from '@/core/shared/domain/Logger.ts'
 import type { CreateEmployee, Employee } from '@/core/employee/domain/Employee.ts'
 import type { Uuid } from '@/core/shared/domain/Uuid.ts'
 
