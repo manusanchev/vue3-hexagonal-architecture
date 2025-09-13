@@ -4,7 +4,7 @@
 📖 **[Leer esta documentación en español](README.es.md)**  
 
 ## 📌 Introduction
-This project is a **Vue 3 template** designed to **simplify the development of scalable and maintainable applications** by applying **Hexagonal Architecture** principles. While still a **work in progress (WIP)**, this template serves as a solid foundation for future projects.
+This project is a **Vue 3 Hexagonal architecture** template designed to **simplify the development of scalable and maintainable applications** by applying **Hexagonal Architecture** principles. While still a **work in progress (WIP)**, this template serves as a solid foundation for future projects.
 
 ## 🔥 Why Choose This Template?
 This template **streamlines application development** by ensuring a **clean separation** between business logic and external frameworks, **boosting maintainability and scalability**.
@@ -78,4 +78,5 @@ const prepareTest = () => {
 
 🚀 **Start building scalable Vue 3 applications with Hexagonal Architecture today!**  
 💡 Got ideas? **Contribute and help improve the project!**  
+
 
